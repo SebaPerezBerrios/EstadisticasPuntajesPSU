@@ -21,36 +21,6 @@ unsigned int parseNumero(std::string::const_iterator&);
 void parsePuntoComa(std::string::const_iterator&);
 void participante();
 
-int main(int argc, char** argv) {
-  if (argc < 2){
-    std::cerr << "Se nececita un nombre de archivo de puntajes" << std::endl;
-    return EXIT_FAILURE;
-  }
-
-  std::ifstream archivoEntrada(argv[1]);
-  std::vector<int> nem;
-  std::vector<int> ranking;
-  std::vector<int> matematica;
-  std::vector<int> lenguaje;
-  std::vector<int> ciencias;
-  std::vector<int> historia;
-
-  leerArchivo(archivoEntrada, nem, ranking, matematica, lenguaje, ciencias, historia);
-  archivoEntrada.close();
-  participante();
-
-  return EXIT_SUCCESS;
-}
-
-struct Puntajes {
-  unsigned int nem;
-  unsigned int ranking;
-  unsigned int matematica;
-  unsigned int lenguaje;
-  unsigned int ciencias;
-  unsigned int historia;
-};
-
 struct Resultado {
   std::string _nombre;
   double _promedio;
@@ -74,6 +44,43 @@ struct Resultado {
   }
 };
 
+int main(int argc, char** argv) {
+  if (argc < 2) {
+    std::cerr << "Se nececita un nombre de archivo de puntajes" << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  std::ifstream archivoEntrada(argv[1]);
+  std::vector<int> nem;
+  std::vector<int> ranking;
+  std::vector<int> matematica;
+  std::vector<int> lenguaje;
+  std::vector<int> ciencias;
+  std::vector<int> historia;
+
+  leerArchivo(archivoEntrada, nem, ranking, matematica, lenguaje, ciencias, historia);
+  archivoEntrada.close();
+
+  std::cout << Resultado("Nem", nem) << std::endl;
+  std::cout << Resultado("Ranking", ranking) << std::endl;
+  std::cout << Resultado("Matematica", matematica) << std::endl;
+  std::cout << Resultado("Lenguaje", lenguaje) << std::endl;
+  std::cout << Resultado("Ciencias", ciencias) << std::endl;
+  std::cout << Resultado("Historia", historia) << std::endl;
+  participante();
+
+  return EXIT_SUCCESS;
+}
+
+struct Puntajes {
+  unsigned int nem;
+  unsigned int ranking;
+  unsigned int matematica;
+  unsigned int lenguaje;
+  unsigned int ciencias;
+  unsigned int historia;
+};
+
 void leerArchivo(std::ifstream& entrada, arreglo& nem, arreglo& ranking, arreglo& matematica, arreglo& lenguaje,
                  arreglo& ciencias, arreglo& historia) {
   std::istream_iterator<std::string> iteradorEntrada(entrada);
@@ -88,12 +95,6 @@ void leerArchivo(std::ifstream& entrada, arreglo& nem, arreglo& ranking, arreglo
     ciencias.push_back(puntajes.ciencias);
     historia.push_back(puntajes.historia);
   }
-  std::cout << Resultado("Nem", nem) << std::endl;
-  std::cout << Resultado("Ranking", ranking) << std::endl;
-  std::cout << Resultado("Matematica", matematica) << std::endl;
-  std::cout << Resultado("Lenguaje", lenguaje) << std::endl;
-  std::cout << Resultado("Ciencias", ciencias) << std::endl;
-  std::cout << Resultado("Historia", historia) << std::endl;
 }
 
 double promedio(const arreglo& puntajes) {
