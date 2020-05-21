@@ -1,3 +1,5 @@
+#include <omp.h>
+
 #include <algorithm>
 #include <cmath>
 #include <fstream>
@@ -11,9 +13,11 @@ typedef std::vector<int> arreglo;
 struct Puntajes;
 
 void leerArchivo(std::ifstream&, arreglo&, arreglo&, arreglo&, arreglo&, arreglo&, arreglo&);
+void calcularResultados(arreglo&, arreglo&, arreglo&, arreglo&, arreglo&, arreglo&);
 double promedio(const arreglo&);
 double desviacionEstandar(const arreglo&, int);
 unsigned int moda(const arreglo&);
+unsigned int moda_sec(const arreglo&);
 double mediana(arreglo&);
 Puntajes parse(const std::string&);
 void _parseRut(std::string::const_iterator&);
@@ -27,13 +31,14 @@ struct Resultado {
   double _desviacionEstandar;
   unsigned int _moda;
   double _mediana;
+  Resultado(){};
   Resultado(const std::string& nombre, arreglo& datos) {
     _nombre = nombre;
     _promedio = promedio(datos);
     _desviacionEstandar = desviacionEstandar(datos, _promedio);
-    _moda = moda(datos);
     _mediana = mediana(datos);
   }
+
   friend std::ostream& operator<<(std::ostream& os, const Resultado& datos) {
     os << "===" << datos._nombre << "===" << std::endl;
     os << "Promedio: " << datos._promedio << std::endl;
@@ -53,6 +58,47 @@ struct Puntajes {
   unsigned int historia;
 };
 
+void calcularResultados(arreglo& nem, arreglo& ranking, arreglo& matematica, arreglo& lenguaje, arreglo& ciencias,
+                        arreglo& historia) {
+  Resultado resultadoNem;
+  Resultado resultadoRanking;
+  Resultado resultadoMatematica;
+  Resultado resultadoLenguaje;
+  Resultado resultadoCiencias;
+  Resultado resultadoHistoria;
+
+#pragma omp parallel
+#pragma omp single
+  {
+#pragma omp task
+    resultadoNem = Resultado("Nem", nem);
+#pragma omp task
+    resultadoRanking = Resultado("Ranking", ranking);
+#pragma omp task
+    resultadoMatematica = Resultado("Matematica", matematica);
+#pragma omp task
+    resultadoLenguaje = Resultado("Lenguaje", lenguaje);
+#pragma omp task
+    resultadoCiencias = Resultado("Ciencias", ciencias);
+#pragma omp task
+    resultadoHistoria = Resultado("Historia", historia);
+  }
+  // calcular moda, algoritmo paralelo
+  resultadoNem._moda = moda(nem);
+  resultadoRanking._moda = moda(ranking);
+  resultadoMatematica._moda = moda(matematica);
+  resultadoLenguaje._moda = moda(lenguaje);
+  resultadoCiencias._moda = moda(ciencias);
+  resultadoHistoria._moda = moda(historia);
+
+  std::cout << resultadoNem << std::endl;
+  std::cout << resultadoRanking << std::endl;
+  std::cout << resultadoMatematica << std::endl;
+  std::cout << resultadoLenguaje << std::endl;
+  std::cout << resultadoCiencias << std::endl;
+  std::cout << resultadoHistoria << std::endl;
+}
+
 int main(int argc, char** argv) {
   if (argc < 2) {
     std::cerr << "Se nececita un nombre de archivo de puntajes" << std::endl;
@@ -70,12 +116,8 @@ int main(int argc, char** argv) {
   leerArchivo(archivoEntrada, nem, ranking, matematica, lenguaje, ciencias, historia);
   archivoEntrada.close();
 
-  std::cout << Resultado("Nem", nem) << std::endl;
-  std::cout << Resultado("Ranking", ranking) << std::endl;
-  std::cout << Resultado("Matematica", matematica) << std::endl;
-  std::cout << Resultado("Lenguaje", lenguaje) << std::endl;
-  std::cout << Resultado("Ciencias", ciencias) << std::endl;
-  std::cout << Resultado("Historia", historia) << std::endl;
+  calcularResultados(nem, ranking, matematica, lenguaje, ciencias, historia);
+
   participante();
 
   return EXIT_SUCCESS;
@@ -85,7 +127,6 @@ void leerArchivo(std::ifstream& entrada, arreglo& nem, arreglo& ranking, arreglo
                  arreglo& ciencias, arreglo& historia) {
   std::istream_iterator<std::string> iteradorEntrada(entrada);
   std::istream_iterator<std::string> finStream;
-
   while (iteradorEntrada != finStream) {
     auto puntajes = parse(*++iteradorEntrada);
     nem.push_back(puntajes.nem);
@@ -120,15 +161,48 @@ struct comparadorPares {
 };
 
 unsigned int moda(const arreglo& puntajes) {
-  std::unordered_map<unsigned int, unsigned int> frecuencia;
-  for (auto puntaje : puntajes) {
-    auto resultado = frecuencia.insert({puntaje, 1});
-    // existe elemento previamente
-    if (!resultado.second) {
-      ++resultado.first->second;
+  // definir particionado por hilo
+  size_t hilos = omp_get_max_threads();
+  size_t particion = puntajes.size() / hilos;
+  std::vector<size_t> particiones(hilos, particion);
+  auto resto = puntajes.size() - particion * hilos;
+  for (auto& particion : particiones) {
+    if (resto--) particion++;
+  }
+
+  std::vector<std::unordered_map<unsigned int, unsigned int>> frecuencia(hilos);
+#pragma omp parallel
+#pragma omp single
+  for (size_t hilo = 0; hilo < hilos; hilo++) {
+#pragma omp task
+    {
+      // calculo offset
+      auto inicioIteracion = 0;
+      for (size_t i = 0; i < hilo; i++) inicioIteracion += particiones[i];
+
+      auto iteradorOffset = puntajes.begin() + inicioIteracion;
+      for (auto puntaje = iteradorOffset; puntaje < iteradorOffset + particiones[hilo]; puntaje++) {
+        auto resultado = frecuencia[hilo].insert({*puntaje, 1});
+        // existe elemento previamente
+        if (!resultado.second) {
+          ++resultado.first->second;
+        }
+      }
     }
   }
-  return max_element(frecuencia.begin(), frecuencia.end(), comparadorPares())->first;
+  // acumulador
+  std::unordered_map<unsigned int, unsigned int> frecuenciaTotal;
+  for (const auto& frecuenciaHilo : frecuencia) {
+    for (const auto& par : frecuenciaHilo) {
+      auto resultado = frecuenciaTotal.insert(par);
+      // existe elemento previamente
+      if (!resultado.second) {
+        resultado.first->second += par.second;
+      }
+    }
+  }
+
+  return max_element(frecuenciaTotal.begin(), frecuenciaTotal.end(), comparadorPares())->first;
 }
 
 double mediana(arreglo& puntajes) {
@@ -183,5 +257,5 @@ void parsePuntoComa(std::string::const_iterator& iterador) { ++iterador; }
 void participante() {
   std::cout << std::endl << "=== Tarea ===" << std::endl;
   std::cout << std::endl << "Sebastián Pérez Berrios" << std::endl;
-  std::cout << std::endl << "version secuencial C++" << std::endl;
+  std::cout << std::endl << "version OpenMP C++" << std::endl;
 }

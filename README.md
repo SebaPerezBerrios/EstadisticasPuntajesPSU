@@ -8,11 +8,13 @@ Este procedimiento se implementa en cuatro programas distintos.
 - Se incluye la implementacion en `Dart` que procesa los elementos secuencialmente.
 ## Compilación
 ```
-make -C SecuencialCPP
+make -C SecuencialCPP &&
+make -C OpenMPCPP
 ```
 ## Ejecución
 ```
 time ./SecuencialCPP/dist/programa <nombre archivo puntajes>
+time ./OpenMPCPP/dist/programa <nombre archivo puntajes>
 ```
 ## Integrantes
 - Léster Vasquez
