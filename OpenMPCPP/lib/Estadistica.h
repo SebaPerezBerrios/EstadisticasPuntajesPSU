@@ -39,7 +39,10 @@ unsigned int moda(const arreglo& puntajes) {
   std::vector<size_t> particiones(hilos, particion);
   auto resto = puntajes.size() - particion * hilos;
   for (auto& particion : particiones) {
-    if (resto--) particion++;
+    if (resto--)
+      particion++;
+    else
+      break;
   }
 
   std::vector<std::unordered_map<unsigned int, unsigned int>> frecuencia(hilos);
