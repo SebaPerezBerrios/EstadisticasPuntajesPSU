@@ -47,8 +47,6 @@ void calcularResultados(std::vector<arreglo>& puntajes) {
   }
 
   for (size_t i = 0; i < 6; i++) {
-    // calcular moda, algoritmo paralelo
-    resultados[i]._moda = moda(puntajes[i]);
     std::cout << resultados[i] << std::endl;
     std::cout << std::endl;
   }
