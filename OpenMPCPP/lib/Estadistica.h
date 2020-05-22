@@ -93,6 +93,7 @@ void q_sort(arreglo& arr, size_t limite_izq, size_t limite_der) {
       --der;
     }
   } while (izq <= der);
+
   if (limite_izq < der) {
     q_sort(arr, limite_izq, der);
   }
@@ -114,29 +115,26 @@ void q_sort_par(arreglo& arr, size_t limite_izq, size_t limite_der, int hilos) {
       --der;
     }
   } while (izq <= der);
-  if (limite_izq < der) {
-    if (hilos <= 0)
-      q_sort(arr, limite_izq, der);
-    else {
-#pragma omp task
-      q_sort_par(arr, limite_izq, der, hilos - 2);
-    }
+
+  if (hilos <= 0) {
+    if (limite_izq < der) q_sort(arr, limite_izq, der);
+    if (limite_der > izq) q_sort(arr, izq, limite_der);
+    return;
   }
-  if (limite_der > izq) {
-    if (hilos <= 0)
-      q_sort(arr, izq, limite_der);
-    else {
-#pragma omp task
-      q_sort_par(arr, izq, limite_der, hilos - 2);
-    }
+
+#pragma omp parallel sections
+  {
+#pragma omp section
+    if (limite_izq < der) q_sort_par(arr, limite_izq, der, hilos - 2);
+#pragma omp section
+    if (limite_der > izq) q_sort_par(arr, izq, limite_der, hilos - 2);
   }
 }
 
 double mediana(arreglo& puntajes) {
   auto hilos = omp_get_max_threads();
-#pragma omp parallel
-#pragma omp single
   q_sort_par(puntajes, 0, puntajes.size() - 1, hilos);
+
   auto cantidad = puntajes.size();
   if (cantidad % 2 == 0) {
     // promedio si cantidad de datos es par
