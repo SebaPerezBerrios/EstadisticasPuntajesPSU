@@ -46,22 +46,18 @@ unsigned int moda(const arreglo& puntajes) {
   }
 
   std::vector<std::unordered_map<unsigned int, unsigned int>> frecuencia(hilos);
-#pragma omp parallel
-#pragma omp single
+#pragma omp parallel for
   for (size_t hilo = 0; hilo < hilos; hilo++) {
-#pragma omp task
-    {
-      // calculo offset
-      size_t inicioIteracion = 0;
-      for (size_t i = 0; i < hilo; i++) inicioIteracion += particiones[i];
+    // calculo offset
+    size_t inicioIteracion = 0;
+    for (size_t i = 0; i < hilo; i++) inicioIteracion += particiones[i];
 
-      auto iteradorOffset = puntajes.begin() + inicioIteracion;
-      for (auto puntaje = iteradorOffset; puntaje < iteradorOffset + particiones[hilo]; puntaje++) {
-        auto resultado = frecuencia[hilo].insert({*puntaje, 1});
-        // existe elemento previamente
-        if (!resultado.second) {
-          ++resultado.first->second;
-        }
+    auto iteradorOffset = puntajes.begin() + inicioIteracion;
+    for (auto puntaje = iteradorOffset; puntaje < iteradorOffset + particiones[hilo]; puntaje++) {
+      auto resultado = frecuencia[hilo].insert({*puntaje, 1});
+      // existe elemento previamente
+      if (!resultado.second) {
+        ++resultado.first->second;
       }
     }
   }
