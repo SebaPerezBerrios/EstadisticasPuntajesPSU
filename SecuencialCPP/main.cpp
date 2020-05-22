@@ -1,57 +1,18 @@
-#include <algorithm>
-#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <iterator>
-#include <unordered_map>
 #include <vector>
 
-typedef std::vector<int> arreglo;
+#include "lib/Structs.h"
 
-struct Puntajes;
+typedef std::vector<unsigned int> arreglo;
 
 void leerArchivo(std::ifstream&, arreglo&, arreglo&, arreglo&, arreglo&, arreglo&, arreglo&);
-double promedio(const arreglo&);
-double desviacionEstandar(const arreglo&, int);
-unsigned int moda(const arreglo&);
-double mediana(arreglo&);
 Puntajes parse(const std::string&);
 void _parseRut(std::string::const_iterator&);
 unsigned int parseNumero(std::string::const_iterator&);
 void parsePuntoComa(std::string::const_iterator&);
 void participante();
-
-struct Resultado {
-  std::string _nombre;
-  double _promedio;
-  double _desviacionEstandar;
-  unsigned int _moda;
-  double _mediana;
-  Resultado(const std::string& nombre, arreglo& datos) {
-    _nombre = nombre;
-    _promedio = promedio(datos);
-    _desviacionEstandar = desviacionEstandar(datos, _promedio);
-    _moda = moda(datos);
-    _mediana = mediana(datos);
-  }
-  friend std::ostream& operator<<(std::ostream& os, const Resultado& datos) {
-    os << "===" << datos._nombre << "===" << std::endl;
-    os << "Promedio: " << datos._promedio << std::endl;
-    os << "Desviacion Estandar: " << datos._desviacionEstandar << std::endl;
-    os << "Moda: " << datos._moda << std::endl;
-    os << "Mediana: " << datos._mediana << std::endl;
-    return os;
-  }
-};
-
-struct Puntajes {
-  unsigned int nem;
-  unsigned int ranking;
-  unsigned int matematica;
-  unsigned int lenguaje;
-  unsigned int ciencias;
-  unsigned int historia;
-};
 
 int main(int argc, char** argv) {
   if (argc < 2) {
@@ -60,22 +21,22 @@ int main(int argc, char** argv) {
   }
 
   std::ifstream archivoEntrada(argv[1]);
-  std::vector<int> nem;
-  std::vector<int> ranking;
-  std::vector<int> matematica;
-  std::vector<int> lenguaje;
-  std::vector<int> ciencias;
-  std::vector<int> historia;
+  std::vector<unsigned int> nem;
+  std::vector<unsigned int> ranking;
+  std::vector<unsigned int> matematica;
+  std::vector<unsigned int> lenguaje;
+  std::vector<unsigned int> ciencias;
+  std::vector<unsigned int> historia;
 
   leerArchivo(archivoEntrada, nem, ranking, matematica, lenguaje, ciencias, historia);
   archivoEntrada.close();
 
-  std::cout << Resultado("Nem", nem) << std::endl;
-  std::cout << Resultado("Ranking", ranking) << std::endl;
-  std::cout << Resultado("Matematica", matematica) << std::endl;
-  std::cout << Resultado("Lenguaje", lenguaje) << std::endl;
-  std::cout << Resultado("Ciencias", ciencias) << std::endl;
-  std::cout << Resultado("Historia", historia) << std::endl;
+  std::cout << Resultado("Nem", nem) << std::endl << std::endl;
+  std::cout << Resultado("Ranking", ranking) << std::endl << std::endl;
+  std::cout << Resultado("Matematica", matematica) << std::endl << std::endl;
+  std::cout << Resultado("Lenguaje", lenguaje) << std::endl << std::endl;
+  std::cout << Resultado("Ciencias", ciencias) << std::endl << std::endl;
+  std::cout << Resultado("Historia", historia) << std::endl << std::endl;
   participante();
 
   return EXIT_SUCCESS;
@@ -95,50 +56,6 @@ void leerArchivo(std::ifstream& entrada, arreglo& nem, arreglo& ranking, arreglo
     ciencias.push_back(puntajes.ciencias);
     historia.push_back(puntajes.historia);
   }
-}
-
-double promedio(const arreglo& puntajes) {
-  unsigned long suma = 0;
-  for (auto puntaje : puntajes) {
-    suma += puntaje;
-  }
-  return ((double)suma) / puntajes.size();
-}
-
-double desviacionEstandar(const arreglo& puntajes, int promedio) {
-  unsigned long suma = 0;
-  for (auto puntaje : puntajes) {
-    suma += pow(puntaje - promedio, 2);
-  }
-  return sqrt(suma / puntajes.size());
-}
-
-typedef std::pair<unsigned int, unsigned int> intPair;
-
-struct comparadorPares {
-  bool operator()(intPair const& lhs, intPair const& rhs) { return lhs.second < rhs.second; }
-};
-
-unsigned int moda(const arreglo& puntajes) {
-  std::unordered_map<unsigned int, unsigned int> frecuencia;
-  for (auto puntaje : puntajes) {
-    auto resultado = frecuencia.insert({puntaje, 1});
-    // existe elemento previamente
-    if (!resultado.second) {
-      ++resultado.first->second;
-    }
-  }
-  return max_element(frecuencia.begin(), frecuencia.end(), comparadorPares())->first;
-}
-
-double mediana(arreglo& puntajes) {
-  std::sort(puntajes.begin(), puntajes.end());
-  auto cantidad = puntajes.size();
-  if (cantidad % 2 == 0) {
-    // promedio si cantidad de datos es par
-    return (puntajes[cantidad / 2 - 1] + puntajes[cantidad / 2]) / 2.0;
-  }
-  return puntajes[cantidad / 2];
 }
 
 Puntajes parse(const std::string& linea) {
