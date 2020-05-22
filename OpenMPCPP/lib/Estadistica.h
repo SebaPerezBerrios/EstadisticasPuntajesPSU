@@ -80,78 +80,63 @@ unsigned int moda(const arreglo& puntajes) {
   return max_element(frecuenciaTotal.begin(), frecuenciaTotal.end(), comparadorPares())->first;
 }
 
-std::vector<arreglo> ordenarParticiones(arreglo& puntajes, const std::vector<size_t>& particiones) {
-  std::vector<arreglo> particionado(particiones.size());
-#pragma omp parallel
-#pragma omp single
-  for (size_t hilo = 0; hilo < particiones.size(); hilo++) {
-#pragma omp task
-    {
-      // calculo offset
-      size_t inicioIteracion = 0;
-      for (size_t i = 0; i < hilo; i++) inicioIteracion += particiones[i];
-
-      auto iteradorOffset = puntajes.begin() + inicioIteracion;
-      std::sort(iteradorOffset, iteradorOffset + particiones[hilo]);
-      particionado[hilo] = arreglo(iteradorOffset, iteradorOffset + particiones[hilo]);
+void q_sort(arreglo& arr, size_t limite_izq, size_t limite_der) {
+  size_t izq = limite_izq;
+  size_t der = limite_der;
+  auto pivote = arr[(izq + der) / 2];
+  do {
+    while (arr[izq] < pivote && izq < limite_der) izq++;
+    while (arr[der] > pivote && der > limite_izq) der--;
+    if (izq <= der) {
+      std::swap(arr[izq], arr[der]);
+      ++izq;
+      --der;
     }
+  } while (izq <= der);
+  if (limite_izq < der) {
+    q_sort(arr, limite_izq, der);
   }
-  return particionado;
+  if (limite_der > izq) {
+    q_sort(arr, izq, limite_der);
+  }
 }
 
-typedef std::pair<unsigned int, size_t> parCola;
-
-struct comparadorParesCola {
-  bool operator()(parCola const& lhs, parCola const& rhs) { return lhs.first > rhs.first; }
-};
-
-void ordenar(arreglo& puntajes) {
-  size_t hilos = omp_get_max_threads();
-
-  if (puntajes.size() < hilos) {
-    std::sort(puntajes.begin(), puntajes.end());
-    return;
+void q_sort_par(arreglo& arr, size_t limite_izq, size_t limite_der, int hilos) {
+  size_t izq = limite_izq;
+  size_t der = limite_der;
+  auto pivote = arr[(izq + der) / 2];
+  do {
+    while (arr[izq] < pivote && izq < limite_der) izq++;
+    while (arr[der] > pivote && der > limite_izq) der--;
+    if (izq <= der) {
+      std::swap(arr[izq], arr[der]);
+      ++izq;
+      --der;
+    }
+  } while (izq <= der);
+  if (limite_izq < der) {
+    if (hilos <= 0)
+      q_sort(arr, limite_izq, der);
+    else {
+#pragma omp task
+      q_sort_par(arr, limite_izq, der, hilos - 2);
+    }
   }
-
-  // particionar
-  size_t particion = puntajes.size() / hilos;
-  std::vector<size_t> particiones(hilos, particion);
-  auto resto = puntajes.size() - particion * hilos;
-  for (auto& particion : particiones) {
-    if (resto--)
-      particion++;
-    else
-      break;
-  }
-
-  // ordenar particiones paralelo
-  auto particionesArreglo = ordenarParticiones(puntajes, particiones);
-
-  // cola prioridad inicioal
-  std::priority_queue<parCola, std::vector<parCola>, comparadorParesCola> cola;
-  std::vector<arreglo::const_iterator> iteradorPos;
-  std::vector<arreglo::const_iterator> iteradorFin;
-  for (size_t i = 0; i < particionesArreglo.size(); i++) {
-    auto it = particionesArreglo[i].begin();
-    cola.push(parCola(*it++, i));
-    iteradorPos.push_back(it);
-    iteradorFin.push_back(particionesArreglo[i].end());
-  }
-  // n-mezcla
-  auto insercion = puntajes.begin();
-  while (!cola.empty()) {
-    auto elem = cola.top();
-    cola.pop();
-    *insercion++ = elem.first;
-    auto posicion = elem.second;
-    if (iteradorPos[posicion] != iteradorFin[posicion]) {
-      cola.push(parCola(*iteradorPos[posicion]++, posicion));
+  if (limite_der > izq) {
+    if (hilos <= 0)
+      q_sort(arr, izq, limite_der);
+    else {
+#pragma omp task
+      q_sort_par(arr, izq, limite_der, hilos - 2);
     }
   }
 }
 
 double mediana(arreglo& puntajes) {
-  ordenar(puntajes);
+  auto hilos = omp_get_max_threads();
+#pragma omp parallel
+#pragma omp single
+  q_sort_par(puntajes, 0, puntajes.size() - 1, hilos);
   auto cantidad = puntajes.size();
   if (cantidad % 2 == 0) {
     // promedio si cantidad de datos es par
