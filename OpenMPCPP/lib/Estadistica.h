@@ -145,8 +145,7 @@ void ordenar(arreglo& puntajes) {
     *insercion++ = elem.first;
     auto posicion = elem.second;
     if (iteradorPos[posicion] != iteradorFin[posicion]) {
-      cola.push(parCola(*iteradorPos[posicion], posicion));
-      ++iteradorPos[elem.second];
+      cola.push(parCola(*iteradorPos[posicion]++, posicion));
     }
   }
 }
