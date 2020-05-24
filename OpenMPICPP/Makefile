@@ -1,5 +1,5 @@
 CXX = mpic++
-CXXFLAGS = -g3 -Wall
+CXXFLAGS = -g3 -Wall -lm -fopenmp
 MKDIR = mkdir -p
 
 LIBS = -lm -lmpi
