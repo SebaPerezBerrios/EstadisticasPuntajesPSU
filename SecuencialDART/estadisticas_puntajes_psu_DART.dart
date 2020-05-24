@@ -1,5 +1,4 @@
 
-import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
@@ -16,6 +15,7 @@ List<int> CIEN = List();
 List<int> HIST = List();
 List<double> PROMEDIOS = List();
 List<double> DESV_ESTAND = List();
+List<double> MEDIANAS = List();
 List<String> lines = await new File('puntajes.csv').readAsLines();//cambiar el nombre del archivo al final, este es uno de prueba con menos datos
 /*lines.forEach((String line){ 
   print(line);//imprime linea x linea
@@ -47,30 +47,67 @@ DESV_ESTAND.add(calcularDesvEstandar(LEN, PROMEDIOS[3]));
 DESV_ESTAND.add(calcularDesvEstandar(CIEN, PROMEDIOS[4]));
 DESV_ESTAND.add(calcularDesvEstandar(HIST, PROMEDIOS[5]));
 
+//calcula y guarda las medianas de cada categoria
+MEDIANAS.add(calcularMediana(NEM));
+MEDIANAS.add(calcularMediana(RANK));
+MEDIANAS.add(calcularMediana(MAT));
+MEDIANAS.add(calcularMediana(LEN));
+MEDIANAS.add(calcularMediana(CIEN));
+MEDIANAS.add(calcularMediana(HIST));
 
+/*
+//datos para pruebas
+List<int> test = List();
+test.add(int.parse('3'));
+test.add(int.parse('1'));
+test.add(int.parse('45'));
+test.add(int.parse('67'));
+test.add(int.parse('3'));
+test.add(int.parse('7'));
+//test.add(int.parse('8'));
+
+*/
+
+print("===NEM===");
 //print(NEM);
-print(PROMEDIOS[0]);
-print(DESV_ESTAND[0]);
+print("Promedio =  ${PROMEDIOS[0]}");
+print("Desviacion estandar = ${DESV_ESTAND[0]}");
+print("Mediana = ${MEDIANAS[0]}\n");
+
+print("===RANKING===");
 //print(RANK);
-print(PROMEDIOS[1]);
-print(DESV_ESTAND[1]);
+print("Promedio =  ${PROMEDIOS[1]}");
+print("Desviacion estandar = ${DESV_ESTAND[1]}");
+print("Mediana = ${MEDIANAS[1]}\n");
+
+print("===MATEMATICA===");
 //print(MAT);
-print(PROMEDIOS[2]);
-print(DESV_ESTAND[2]);
+print("Promedio =  ${PROMEDIOS[2]}");
+print("Desviacion estandar = ${DESV_ESTAND[2]}");
+print("Mediana = ${MEDIANAS[2]}\n");
+
+print("===LENGUAJE===");
 //print(LEN);
-print(PROMEDIOS[3]);
-print(DESV_ESTAND[3]);
+print("Promedio =  ${PROMEDIOS[3]}");
+print("Desviacion estandar = ${DESV_ESTAND[3]}");
+print("Mediana = ${MEDIANAS[3]}\n");
+
+print("===CIENCIAS===");
 //print(CIEN);
-print(PROMEDIOS[4]);
-print(DESV_ESTAND[4]);
+print("Promedio =  ${PROMEDIOS[4]}");
+print("Desviacion estandar = ${DESV_ESTAND[4]}");
+print("Mediana = ${MEDIANAS[4]}\n");
+
+print("===HISTORIA===");
 //print(HIST);
-print(PROMEDIOS[5]);
-print(DESV_ESTAND[5]);
+print("Promedio =  ${PROMEDIOS[5]}");
+print("Desviacion estandar = ${DESV_ESTAND[5]}");
+print("Mediana = ${MEDIANAS[5]}\n");
+
 
 
 
 //lee el archivo linea x linea y imprimirlo linea x linea
-
 /* 
   new File('puntajes_test.csv')
     .openRead()
@@ -131,11 +168,38 @@ double calcularPromedio(List<int> lista){
 }
 
 double calcularDesvEstandar(List<int> valores, double promedio){
-  //double sumatoria = valores.fold(0, (suma, num) => (num - promedio)*(num - promedio));
-  //double sumatoria = valores.fold(0, (suma, num) => pow((num - promedio),2));
   double sumatoria=0;
   for(int i=0;i<valores.length;i++){
     sumatoria = sumatoria + pow((valores[i] - promedio),2);
   }
   return sqrt(sumatoria/(valores.length-1));
+}
+
+//funcion que calcula la mediana, tambien ordena la lista en orden ascendente(?)
+double calcularMediana(List<int> lista){
+  lista.sort(); //el sort esta bien
+  var l = lista.length;
+  if(l%2 == 0){
+    return (lista[(l~/2) - 1] + lista[l~/2])/2.0;
+  }
+  return lista[l~/2].toDouble(); //en impar funciona
+}
+
+
+//funcion para calcular la moda, si hay 2 modas arroja la ultima
+//ESTA MALA LA FUNCION SE DEMORA DEMASIADO
+int calcularModa(List<int> valores){
+  int cont,moda;
+  for(int a=0;a<valores.length;a++){
+    cont=0;
+    for(int b=0;b<valores.length;b++){
+      if(valores[a]== valores[b]){
+        cont++;
+      }
+      if(cont>=2){
+        moda = valores[a];
+      }
+    }
+  }
+  return moda;
 }
