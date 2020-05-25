@@ -105,7 +105,9 @@ void participantes(){
   stdout.writeln('');
   stdout.writeln("=== Tarea ===");
   stdout.writeln('');
-  stdout.writeln("Ivan Perez Alarcon");
+  stdout.writeln("Ivan Perez");
+  stdout.writeln("Sebastian Perez");
+  stdout.writeln("Lester Vasquez");
   stdout.writeln("version secuencial Dart");
 }
 
