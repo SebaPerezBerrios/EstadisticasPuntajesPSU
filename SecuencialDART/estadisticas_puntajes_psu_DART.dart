@@ -13,13 +13,11 @@ List<int> MAT = List();
 List<int> LEN = List();
 List<int> CIEN = List();
 List<int> HIST = List();
+List<int> MODAS = List();
 List<double> PROMEDIOS = List();
 List<double> DESV_ESTAND = List();
 List<double> MEDIANAS = List();
 List<String> lines = await new File('puntajes.csv').readAsLines();//cambiar el nombre del archivo al final, este es uno de prueba con menos datos
-/*lines.forEach((String line){ 
-  print(line);//imprime linea x linea
-});*/
 
 for(int i=0;i<lines.length;i++){ //recorre linea x linea la lista que contiene el archivo guardando los puntajes en las listas respectivas
 
@@ -47,6 +45,14 @@ DESV_ESTAND.add(calcularDesvEstandar(LEN, PROMEDIOS[3]));
 DESV_ESTAND.add(calcularDesvEstandar(CIEN, PROMEDIOS[4]));
 DESV_ESTAND.add(calcularDesvEstandar(HIST, PROMEDIOS[5]));
 
+//calcula y guarda las modas de cada categoria
+MODAS.add(calcularModa(NEM));
+MODAS.add(calcularModa(RANK));
+MODAS.add(calcularModa(MAT));
+MODAS.add(calcularModa(LEN));
+MODAS.add(calcularModa(CIEN));
+MODAS.add(calcularModa(HIST));
+
 //calcula y guarda las medianas de cada categoria
 MEDIANAS.add(calcularMediana(NEM));
 MEDIANAS.add(calcularMediana(RANK));
@@ -55,102 +61,43 @@ MEDIANAS.add(calcularMediana(LEN));
 MEDIANAS.add(calcularMediana(CIEN));
 MEDIANAS.add(calcularMediana(HIST));
 
-/*
-//datos para pruebas
-List<int> test = List();
-test.add(int.parse('3'));
-test.add(int.parse('1'));
-test.add(int.parse('45'));
-test.add(int.parse('67'));
-test.add(int.parse('3'));
-test.add(int.parse('7'));
-//test.add(int.parse('8'));
-
-*/
-
 print("===NEM===");
-//print(NEM);
 print("Promedio =  ${PROMEDIOS[0]}");
 print("Desviacion estandar = ${DESV_ESTAND[0]}");
+print("Moda = ${MODAS[0]}");
 print("Mediana = ${MEDIANAS[0]}\n");
 
 print("===RANKING===");
-//print(RANK);
 print("Promedio =  ${PROMEDIOS[1]}");
 print("Desviacion estandar = ${DESV_ESTAND[1]}");
+print("Moda = ${MODAS[1]}");
 print("Mediana = ${MEDIANAS[1]}\n");
 
 print("===MATEMATICA===");
-//print(MAT);
 print("Promedio =  ${PROMEDIOS[2]}");
 print("Desviacion estandar = ${DESV_ESTAND[2]}");
+print("Moda = ${MODAS[2]}");
 print("Mediana = ${MEDIANAS[2]}\n");
 
 print("===LENGUAJE===");
-//print(LEN);
 print("Promedio =  ${PROMEDIOS[3]}");
 print("Desviacion estandar = ${DESV_ESTAND[3]}");
+print("Moda = ${MODAS[3]}");
 print("Mediana = ${MEDIANAS[3]}\n");
 
 print("===CIENCIAS===");
-//print(CIEN);
 print("Promedio =  ${PROMEDIOS[4]}");
 print("Desviacion estandar = ${DESV_ESTAND[4]}");
+print("Moda = ${MODAS[4]}");
 print("Mediana = ${MEDIANAS[4]}\n");
 
 print("===HISTORIA===");
-//print(HIST);
 print("Promedio =  ${PROMEDIOS[5]}");
 print("Desviacion estandar = ${DESV_ESTAND[5]}");
+print("Moda = ${MODAS[5]}");
 print("Mediana = ${MEDIANAS[5]}\n");
 
-
-
-
-//lee el archivo linea x linea y imprimirlo linea x linea
-/* 
-  new File('puntajes_test.csv')
-    .openRead()
-    .transform(utf8.decoder)
-    .transform(new LineSplitter())
-    .forEach((var l) {
-
-      //NEM.add(int.parse(l.substring(9,12)));
-      //RANK.add(int.parse(l.substring(13,16)));
-      //MAT.add(int.parse(l.substring(17,20)));
-      //LEN.add(int.parse(l.substring(21,24)));
-      //CIEN.add(int.parse(l.substring(25,28)));
-      //HIST.add(int.parse(l.substring(29,32)));
-
-      //print(l);
-      //print('     ');
-      //print(NEM);
-    });
-*/
-
-
-    //print(NEM.isEmpty); //por ahora esto no funciona
-
-/* //LEER EL ARCHIVO COMPLETO, IMPRIMIRLO COMPLETO Y COPIARLO COMPLETO EN OTRO ARCHIVO
-  var file = File('puntajes_test.csv');
-  var contents;
-  if(await file.exists()){
-    //read file
-    contents = await file.readAsString(); //leo el archivo y guardo todo en contents
-    print(file.readAsStringSync()); //este comando imprime el contenido completo del archivo
-
-    print('   ');
-    print(contents); //otra forma de imprimir el archivo completo
-
-    //write file
-    var salida = await File('estadisticas_psu.csv').writeAsString(contents); //escribo en el archivo
-    salida.writeAsString('este comando sirve para escribir en el archivo salida');
-    print(await salida.exists());
-    print(await salida.length());
-
-  */
-
-  participantes();
+participantes();
 
 }
 
@@ -185,21 +132,24 @@ double calcularMediana(List<int> lista){
   return lista[l~/2].toDouble(); //en impar funciona
 }
 
+//si no hay moda retorna el primer valor, si hay mas de 1 moda retorna la primera
+int calcularModa(List<int> lista){
+  var aux = new Map();
+  int max=0,val;
 
-//funcion para calcular la moda, si hay 2 modas arroja la ultima
-//ESTA MALA LA FUNCION SE DEMORA DEMASIADO
-int calcularModa(List<int> valores){
-  int cont,moda;
-  for(int a=0;a<valores.length;a++){
-    cont=0;
-    for(int b=0;b<valores.length;b++){
-      if(valores[a]== valores[b]){
-        cont++;
-      }
-      if(cont>=2){
-        moda = valores[a];
-      }
+  for(int i=0;i<lista.length;i++){
+    if(!aux.containsKey(lista[i])){
+      aux[lista[i]] = 1;
+    }
+    else{
+      aux[lista[i]]++;
     }
   }
-  return moda;
+  for(int i = 0;i<aux.length;i++){
+    if(aux[lista[i]] > max){
+      max = aux[lista[i]];
+      val = lista[i];
+    }
+  }
+  return val;
 }
