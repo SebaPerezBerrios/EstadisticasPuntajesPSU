@@ -147,11 +147,11 @@ int calcularModa(List<int> lista){
       aux[lista[i]]++;
     }
   }
-  for(int i = 0;i<aux.length;i++){
-    if(aux[lista[i]] > max){
-      max = aux[lista[i]];
-      val = lista[i];
+  aux.forEach((key, value) {
+    if (value > max) {
+      max = value;
+      val = key;
     }
-  }
+  });
   return val;
 }
