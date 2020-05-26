@@ -1,12 +1,10 @@
 
 import 'dart:io';
 import 'dart:math';
-import 'package:args/args.dart';
 
 //comentarios en dart
 
 main(List<String> args) async{
-  print (args);
 if (args.length < 1) {
   print("Error, se necesita un archivo de puntajes");
   exitCode = 1;
