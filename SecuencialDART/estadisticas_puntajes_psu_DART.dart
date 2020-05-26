@@ -1,12 +1,17 @@
 
 import 'dart:io';
 import 'dart:math';
-
+import 'package:args/args.dart';
 
 //comentarios en dart
 
-main() async{
-
+main(List<String> args) async{
+  print (args);
+if (args.length < 1) {
+  print("Error, se necesita un archivo de puntajes");
+  exitCode = 1;
+  return;
+}
 List<int> NEM = List();
 List<int> RANK = List();
 List<int> MAT = List();
@@ -17,7 +22,7 @@ List<int> MODAS = List();
 List<double> PROMEDIOS = List();
 List<double> DESV_ESTAND = List();
 List<double> MEDIANAS = List();
-List<String> lines = await new File('puntajes.csv').readAsLines();//cambiar el nombre del archivo al final, este es uno de prueba con menos datos
+List<String> lines = await new File(args[0]).readAsLines();//cambiar el nombre del archivo al final, este es uno de prueba con menos datos
 
 for(int i=0;i<lines.length;i++){ //recorre linea x linea la lista que contiene el archivo guardando los puntajes en las listas respectivas
 
