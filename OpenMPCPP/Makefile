@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -g3 -Wall -lm -fopenmp
+CXXFLAGS = -O3 -Wall -lm -fopenmp
 MKDIR = mkdir -p
 
 LIBS = -lm

@@ -188,5 +188,7 @@ void parsePuntoComa(std::string::const_iterator& iterador) { ++iterador; }
 void participante() {
   std::cout << std::endl << "=== Tarea ===" << std::endl;
   std::cout << std::endl << "Sebastián Pérez Berrios" << std::endl;
+  std::cout << std::endl << "Ivan Pérez" << std::endl;
+  std::cout << std::endl << "Lester Vasquez" << std::endl;;
   std::cout << std::endl << "version OpenMPI C++" << std::endl;
 }

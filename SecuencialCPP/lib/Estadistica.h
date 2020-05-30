@@ -29,7 +29,7 @@ struct comparadorPares {
 
 unsigned int moda(const arreglo& puntajes) {
   std::unordered_map<unsigned int, unsigned int> frecuencia;
-  for (auto puntaje : puntajes) {
+  for (const auto& puntaje : puntajes) {
     auto resultado = frecuencia.insert({puntaje, 1});
     // existe elemento previamente
     if (!resultado.second) {
