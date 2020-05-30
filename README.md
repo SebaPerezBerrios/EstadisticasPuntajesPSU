@@ -13,7 +13,6 @@ Este procedimiento se implementa en cuatro programas distintos.
 make -C SecuencialCPP &&
 make -C OpenMPCPP &&
 make -C OpenMPICPP &&  
-dart2native SecuencialDART/estadisticas_puntajes_psu_DART.dart -o programa
 
 ```
 ## Ejecución
@@ -26,7 +25,7 @@ modificar el archivo run.sh para incluir el nombre del archivo de puntajes.
 time ./SecuencialCPP/dist/programa <nombre archivo puntajes>
 time ./OpenMPCPP/dist/programa <nombre archivo puntajes>
 time ./OpenMPICPP/run.sh  
-time ./programa <nombre archivo puntajes>
+time dart SecuencialDART/estadisticas_puntajes_psu_DART.dart <nombre archivo puntajes>
 ```
 ## Integrantes
 - Léster Vasquez
